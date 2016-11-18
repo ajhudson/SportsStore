@@ -31,6 +31,7 @@ namespace SportsStore
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration["Data:SportsStoreProducts:ConnectionString"]));
             services.AddTransient<IProductRepository, EFProductRepository>();
+            services.AddTransient<IOrderRepository, EFOrderRepository>();
             services.AddScoped<Cart>(serviceProvider => SessionCart.GetCart(serviceProvider));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddMvc();
