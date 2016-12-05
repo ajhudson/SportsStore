@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using SportsStore.Controllers;
 using SportsStore.Models;
@@ -88,6 +89,40 @@ namespace SportsStore.Tests
             Assert.Null(result);
         }
 
+        [Fact]
+        public void CanSaveValidChanges()
+        {
+            // arrange 
+            Mock<IProductRepository> mock = new Mock<IProductRepository>();
+            Mock<ITempDataDictionary> tempData = new Mock<ITempDataDictionary>();
+            AdminController controller = new AdminController(mock.Object) { TempData = tempData.Object };
+            Product product = new Product { Name = "Test" };
+
+            // act 
+            IActionResult result = controller.Edit(product);
+
+            // assert
+            mock.Verify(x => x.SaveProduct(product));
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("Index", (result as RedirectToActionResult).ActionName);
+        }
+
+        [Fact]
+        public void CannotSaveInvalidChanges()
+        {
+            // arrange
+            Mock<IProductRepository> mock = new Mock<IProductRepository>();
+            AdminController controller = new AdminController(mock.Object);
+            Product product = new Product { Name = "Test" };
+            controller.ModelState.AddModelError("error", "error");
+
+            // act 
+            IActionResult result = controller.Edit(product);
+
+            // assert
+            mock.Verify(m => m.SaveProduct(It.IsAny<Product>()), Times.Never);
+            Assert.IsType<ViewResult>(result);
+        }
 
         private T GetViewModel<T>(IActionResult result) where T : class
         {
