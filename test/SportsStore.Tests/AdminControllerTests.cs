@@ -124,6 +124,31 @@ namespace SportsStore.Tests
             Assert.IsType<ViewResult>(result);
         }
 
+        [Fact]
+        public void CanDeleteValidProducts()
+        {
+            // arrange
+            Product deletedProduct = new Product { ProductId = 2, Name = "Test" };
+
+            Product[] products = new Product[]
+            {
+                new Product { ProductId = 1, Name = "P1" },
+                deletedProduct,
+                new Product { ProductId = 3, Name = "P3" }
+            };
+
+            Mock<IProductRepository> mock = new Mock<IProductRepository>();
+            Mock<ITempDataDictionary> tempData = new Mock<ITempDataDictionary>();
+            mock.Setup(x => x.Products).Returns(products);
+
+            AdminController controller = new AdminController(mock.Object) { TempData = tempData.Object };
+
+            // act
+            controller.Delete(deletedProduct.ProductId);
+
+            // assert
+            mock.Verify(x => x.DeleteProduct(deletedProduct.ProductId));
+        }
         private T GetViewModel<T>(IActionResult result) where T : class
         {
             return (result as ViewResult)?.ViewData.Model as T;
